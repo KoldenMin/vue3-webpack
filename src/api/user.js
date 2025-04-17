@@ -72,3 +72,32 @@ export function updateUser(id, updateDTO) {
         data: updateDTO
     });
 }
+
+// 设为管理员
+export function setAdmin(id) {
+    return request({
+        url: '/user/setAsAdmin/' + id,
+        method: 'put'
+    });
+}
+
+// 获取用户盐
+export function getUserSalt(username) {
+    return request({
+        url: '/user/salt',
+        method: 'get',
+        params: {username}
+    });
+}
+
+// 更新头像
+export function updateUserAvatar(formData) {
+    return request({
+        url: '/user/update-avatar',
+        method: 'post',
+        data: formData,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+}

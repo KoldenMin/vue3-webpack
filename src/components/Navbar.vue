@@ -1,13 +1,26 @@
 <script setup>
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {useStore} from 'vuex';
 import {useRouter} from 'vue-router';
+import {ElMessage} from 'element-plus';
 
 const store = useStore();
 const router = useRouter();
 
 const userInfo = computed(() => store.state.userInfo);
 const isAdmin = computed(() => store.getters.isAdmin);
+const avatarUrl = computed(() => {
+  if (!userInfo.value?.avatar) return '';
+ // todo 用户头像直接访问浏览器能拿到,前端不显示
+  // 如果头像路径已经是完整URL，则直接返回
+  if (userInfo.value.avatar.startsWith('http')) {
+    return userInfo.value.avatar;
+  }
+  return 'http://localhost:8080/api' + userInfo.value.avatar
+});
+
+// 用于头像上传的引用
+const avatarInput = ref(null);
 
 const handleCommand = (command) => {
   if (command === 'logout') {
@@ -16,10 +29,47 @@ const handleCommand = (command) => {
     });
   } else if (command === 'profile') {
     router.push('/profile');
+  } else if (command === 'change-avatar') {
+    // 触发文件选择
+    avatarInput.value.click();
   }
 }
 
+// 处理头像上传
+const handleAvatarChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
+  // 检查文件类型
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+  if (!allowedTypes.includes(file.type)) {
+    ElMessage.error('请上传JPG、PNG或GIF格式的图片');
+    return;
+  }
+
+  // 检查文件大小（限制为2MB）
+  const maxSize = 2 * 1024 * 1024;
+  if (file.size > maxSize) {
+    ElMessage.error('图片大小不能超过2MB');
+    return;
+  }
+
+  // 创建表单数据
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  // 调用更新头像的action
+  store.dispatch('updateAvatar', formData)
+      .then(() => {
+        ElMessage.success('头像更新成功');
+      })
+      .catch(error => {
+        ElMessage.error('头像更新失败: ' + (error.message || '未知错误'));
+      });
+
+  // 清空文件输入，以便再次选择同一文件
+  e.target.value = '';
+}
 </script>
 
 <template>
@@ -32,16 +82,25 @@ const handleCommand = (command) => {
     </div>
     <div class="user-info">
       <el-dropdown trigger="click" @command="handleCommand">
-        <span class="user-name">
-          {{ userInfo?.realName || '用户' }} <i class="el-icon-arrow-down"></i>
-        </span>
+        <div class="avatar-container">
+          <img :src="avatarUrl" alt="用户头像" class="user-avatar"/>
+        </div>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item command="profile">个人信息</el-dropdown-item>
+            <el-dropdown-item command="change-avatar">更换头像</el-dropdown-item>
             <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+      <!-- 隐藏的文件输入用于上传头像 -->
+      <input
+          ref="avatarInput"
+          type="file"
+          accept="image/jpeg,image/png,image/gif"
+          class="hidden-input"
+          @change="handleAvatarChange"
+      />
     </div>
   </div>
 </template>
@@ -92,26 +151,30 @@ const handleCommand = (command) => {
 .user-info {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
-.user-name {
+.avatar-container {
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  color: #303133;
-  font-size: 14px;
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: 4px;
+  border-radius: 50%;
   transition: all 0.3s ease;
 }
 
-.user-name:hover {
+.avatar-container:hover {
   background-color: #f5f7fa;
 }
 
-.el-icon-arrow-down {
-  margin-left: 4px;
-  font-size: 12px;
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.hidden-input {
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -130,6 +193,11 @@ const handleCommand = (command) => {
 
   .logo {
     font-size: 18px;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
   }
 }
 </style>

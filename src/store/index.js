@@ -1,14 +1,15 @@
 // vuex状态管理
 import {createStore} from 'vuex';
-import {login, getUserInfo} from '@/api/user';
+import {login, getUserInfo, getUserSalt, updateUserAvatar} from '@/api/user';
 import {getToken, setToken, clearLoginInfo, setUserInfo} from '@/utils/auth';
 import {logout} from "@/api/user";
+import MD5 from 'crypto-js/md5';
+import {enc} from 'crypto-js';
 import {ElMessage} from "element-plus";
 
 export default createStore({
     state: {
-        token: getToken(),
-        userInfo: null
+        token: getToken(), userInfo: null
     },
     getters: {
         isAdmin: state => {
@@ -25,6 +26,12 @@ export default createStore({
         CLEAR_LOGIN_INFO: (state) => {
             state.token = null;
             state.userInfo = null;
+        },
+        // 更新用户头像
+        UPDATE_AVATAR(state, avatarUrl) {
+            if (state.userInfo) {
+                state.userInfo.avatar = avatarUrl;
+            }
         }
     },
     actions: {
@@ -32,18 +39,28 @@ export default createStore({
         login({commit}, userInfo) {
             const {username, password} = userInfo;
             return new Promise((resolve, reject) => {
-                login({username: username.trim(), password: password}).then(response => {
-                    // const {data} = response;
-                    const data = response.data;
-                    commit('SET_TOKEN', data.token);
-                    commit('SET_USER_INFO', data);
-                    setToken(data.token);
-                    setUserInfo(data);
-                    resolve();
-                }).catch(error => {
-                    ElMessage.error("登录失败")
-                    reject(error);
-                });
+                getUserSalt(username.trim()).then(saltRes => {
+                    const salt = saltRes.data
+                    console.log(salt + '@@@@');
+                    if (!salt) {
+                        reject('获取用户信息失败');
+                        return;
+                    }
+                    const encryptedPassword = MD5(password + salt).toString(enc.Hex);
+                    console.log(encryptedPassword);
+                    login({username: username.trim(), password: encryptedPassword}).then(response => {
+                        // const {data} = response;
+                        const data = response.data;
+                        commit('SET_TOKEN', data.token);
+                        commit('SET_USER_INFO', data);
+                        setToken(data.token);
+                        setUserInfo(data);
+                        resolve();
+                    }).catch(error => {
+                        ElMessage.error("登录失败")
+                        reject(error);
+                    });
+                })
             });
         },
 
@@ -76,6 +93,25 @@ export default createStore({
                     clearLoginInfo();
                     resolve();
                 })
+            });
+        },
+
+        // 更新头像
+        updateAvatar({commit, state}, formData) {
+            formData.append('userId', state.userInfo.id);
+
+            return new Promise((resolve, reject) => {
+                updateUserAvatar(formData).then(response => {
+                    if (response.code === 200) {
+                        // 更新本地 state 中的头像 URL
+                        commit('UPDATE_AVATAR', response.data.avatarUrl);
+                        resolve(response.data);
+                    } else {
+                        reject(new Error(response.data.message || '头像更新失败'));
+                    }
+                }).catch(error => {
+                    reject(error);
+                });
             });
         }
     }

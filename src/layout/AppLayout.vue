@@ -8,12 +8,12 @@
 </template>
 
 <script>
-import Navbar from '@/components/Navbar.vue';
+import NavbarBak from '@/components/Navbar.vue';
 
 export default {
   name: 'AppLayout',
   components: {
-    Navbar
+    Navbar: NavbarBak
   }
 };
 </script>

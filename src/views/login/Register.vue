@@ -153,173 +153,156 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import {ref, reactive} from 'vue';
 import {useRouter} from 'vue-router';
 import {ElMessage} from 'element-plus';
 import {Delete} from '@element-plus/icons-vue';
 import {register} from '@/api/user';
 
-export default {
-  name: 'Register',
-  components: {
-    Delete
-  },
-  setup() {
-    const router = useRouter();
 
-    const registerForm = reactive({
-      username: '',
-      password: '',
-      confirmPassword: '',
-      realName: '',
-      gender: 1,
-      age: 18,
-      phone: '',
-      currentAddress: '',
-      entryTime: '',
-      jobDescription: '',
-      educationList: [
-        {
-          school: '',
-          major: '',
-          degree: '',
-          startDate: '',
-          endDate: '',
-          description: ''
-        }
-      ]
-    });
+const router = useRouter();
 
-    const validatePass = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('请输入密码'));
-      } else if (value.length < 2) {
-        callback(new Error('密码长度不能小于2位'));
-      } else {
-        if (registerForm.confirmPassword !== '') {
-          registerFormRef.value.validateField('confirmPassword');
-        }
-        callback();
-      }
-    };
+const registerForm = reactive({
+  username: '',
+  password: '',
+  confirmPassword: '',
+  realName: '',
+  gender: 1,
+  age: 18,
+  phone: '',
+  currentAddress: '',
+  entryTime: '',
+  jobDescription: '',
+  educationList: [
+    {
+      school: '',
+      major: '',
+      degree: '',
+      startDate: '',
+      endDate: '',
+      description: ''
+    }
+  ]
+});
 
-    const validatePass2 = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('请再次输入密码'));
-      } else if (value !== registerForm.password) {
-        callback(new Error('两次输入密码不一致'));
-      } else {
-        callback();
-      }
-    };
-
-    const validatePhone = (rule, value, callback) => {
-      const phoneReg = /^1[3-9]\d{9}$/;
-      if (value && !phoneReg.test(value)) {
-        callback(new Error('请输入正确的手机号码'));
-      } else {
-        callback();
-      }
-    };
-
-    const registerRules = {
-      username: [
-        {required: true, message: '请输入用户名', trigger: 'blur'},
-        {min: 2, max: 20, message: '长度在 4 到 20 个字符', trigger: 'blur'}
-      ],
-      password: [
-        {validator: validatePass, trigger: 'blur'}
-      ],
-      confirmPassword: [
-        {validator: validatePass2, trigger: 'blur'}
-      ],
-      realName: [
-        {required: true, message: '请输入姓名', trigger: 'blur'}
-      ],
-      gender: [
-        {required: true, message: '请选择性别', trigger: 'change'}
-      ],
-      age: [
-        {required: true, message: '请输入年龄', trigger: 'blur'},
-        {type: 'number', min: 18, max: 100, message: '年龄必须在18到100之间', trigger: 'blur'}
-      ],
-      phone: [
-        {required: true, message: '请输入手机号码', trigger: 'blur'},
-        {validator: validatePhone, trigger: 'blur'}
-      ]
-    };
-
-    const registerFormRef = ref(null);
-    const loading = ref(false);
-
-    const addEducation = () => {
-      registerForm.educationList.push({
-        school: '',
-        major: '',
-        degree: '',
-        startDate: '',
-        endDate: '',
-        description: ''
-      });
-    };
-
-    const removeEducation = (index) => {
-      registerForm.educationList.splice(index, 1);
-    };
-
-    const handleRegister = () => {
-      registerFormRef.value.validate((valid) => {
-        if (!valid) {
-          return false;
-        }
-
-        loading.value = true;
-
-        // 处理提交数据
-        const formData = {
-          username: registerForm.username,
-          password: registerForm.password,
-          realName: registerForm.realName,
-          gender: registerForm.gender,
-          age: registerForm.age,
-          phone: registerForm.phone,
-          currentAddress: registerForm.currentAddress,
-          entryTime: registerForm.entryTime,
-          jobDescription: registerForm.jobDescription,
-          educationList: registerForm.educationList
-        };
-
-        register(formData)
-            .then(() => {
-              ElMessage.success('注册成功，请登录');
-              router.push('/login');
-            })
-            .catch(() => {
-              // 错误处理由全局拦截器完成
-            })
-            .finally(() => {
-              loading.value = false;
-            });
-      });
-    };
-
-    const goToLogin = () => {
-      router.push('/login');
-    };
-
-    return {
-      registerForm,
-      registerRules,
-      registerFormRef,
-      loading,
-      addEducation,
-      removeEducation,
-      handleRegister,
-      goToLogin
-    };
+const validatePass = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('请输入密码'));
+  } else if (value.length < 2) {
+    callback(new Error('密码长度不能小于2位'));
+  } else {
+    if (registerForm.confirmPassword !== '') {
+      registerFormRef.value.validateField('confirmPassword');
+    }
+    callback();
   }
 };
+
+const validatePass2 = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('请再次输入密码'));
+  } else if (value !== registerForm.password) {
+    callback(new Error('两次输入密码不一致'));
+  } else {
+    callback();
+  }
+};
+
+const validatePhone = (rule, value, callback) => {
+  const phoneReg = /^1[3-9]\d{9}$/;
+  if (value && !phoneReg.test(value)) {
+    callback(new Error('请输入正确的手机号码'));
+  } else {
+    callback();
+  }
+};
+
+const registerRules = {
+  username: [
+    {required: true, message: '请输入用户名', trigger: 'blur'},
+    {min: 2, max: 20, message: '长度在 4 到 20 个字符', trigger: 'blur'}
+  ],
+  password: [
+    {validator: validatePass, trigger: 'blur'}
+  ],
+  confirmPassword: [
+    {validator: validatePass2, trigger: 'blur'}
+  ],
+  realName: [
+    {required: true, message: '请输入姓名', trigger: 'blur'}
+  ],
+  gender: [
+    {required: true, message: '请选择性别', trigger: 'change'}
+  ],
+  age: [
+    {required: true, message: '请输入年龄', trigger: 'blur'},
+    {type: 'number', min: 18, max: 100, message: '年龄必须在18到100之间', trigger: 'blur'}
+  ],
+  phone: [
+    {required: true, message: '请输入手机号码', trigger: 'blur'},
+    {validator: validatePhone, trigger: 'blur'}
+  ]
+};
+
+const registerFormRef = ref(null);
+const loading = ref(false);
+
+const addEducation = () => {
+  registerForm.educationList.push({
+    school: '',
+    major: '',
+    degree: '',
+    startDate: '',
+    endDate: '',
+    description: ''
+  });
+};
+
+const removeEducation = (index) => {
+  registerForm.educationList.splice(index, 1);
+};
+
+const handleRegister = () => {
+  registerFormRef.value.validate((valid) => {
+    if (!valid) {
+      return false;
+    }
+
+    loading.value = true;
+
+    // 处理提交数据
+    const formData = {
+      username: registerForm.username,
+      password: registerForm.password,
+      realName: registerForm.realName,
+      gender: registerForm.gender,
+      age: registerForm.age,
+      phone: registerForm.phone,
+      currentAddress: registerForm.currentAddress,
+      entryTime: registerForm.entryTime,
+      jobDescription: registerForm.jobDescription,
+      educationList: registerForm.educationList
+    };
+
+    register(formData)
+        .then(() => {
+          ElMessage.success('注册成功，请登录');
+          router.push('/login');
+        })
+        .catch(() => {
+          // 错误处理由全局拦截器完成
+        })
+        .finally(() => {
+          loading.value = false;
+        });
+  });
+};
+
+const goToLogin = () => {
+  router.push('/login');
+}
+
 </script>
 
 <style scoped>

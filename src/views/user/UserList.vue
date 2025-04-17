@@ -215,7 +215,7 @@
 <script setup>
 import {ref, onMounted} from 'vue';
 import {ElMessage} from 'element-plus';
-import {getUserList, getUserInfo, getUserPage, deleteUser} from '@/api/user';
+import {getUserList, getUserInfo, getUserPage, deleteUser, setAdmin} from '@/api/user';
 import {getEducationList} from '@/api/education';
 import {Cancel} from "axios";
 
@@ -254,8 +254,22 @@ const handleClear = () => {
   fetchPageUserList()
 }
 
-const handleSetAsAdmin = (id) => {
-  console.log(id)
+const handleSetAsAdmin = async (id) => {
+  try {
+    await setAdmin(id)
+    ElMessage({
+      type: 'success',
+      message: '设为管理员成功'
+    })
+
+    await fetchPageUserList()
+  } catch (error) {
+    // 处理错误情况
+    ElMessage({
+      type: 'error',
+      message: '设为管理员失败: ' + error.message
+    })
+  }
 }
 
 const handleDelUser = async (id) => {
