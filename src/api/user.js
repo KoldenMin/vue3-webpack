@@ -101,3 +101,15 @@ export function updateUserAvatar(formData) {
         }
     });
 }
+
+// 上传简历
+export function uploadResume(formData) {
+    return request({
+        url: '/user/upload-resume',
+        method: 'post',
+        data: formData,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+}

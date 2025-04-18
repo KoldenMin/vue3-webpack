@@ -73,7 +73,9 @@ export default createStore({
                         reject('验证失败，请重新登录。');
                     }
                     commit('SET_USER_INFO', data);
+                    commit('SET_TOKEN', data.token);
                     setUserInfo(data);
+                    setToken(data.token);
                     resolve(data);
                 }).catch(error => {
                     reject(error);

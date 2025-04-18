@@ -16,7 +16,7 @@ service.interceptors.request.use(
         const token = getToken();
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
-            console.log('完整的Authorization头:', config.headers['Authorization'])
+            // console.log('完整的Authorization头:', config.headers['Authorization'])
         }
         return config;
     },

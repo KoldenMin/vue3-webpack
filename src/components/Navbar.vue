@@ -10,8 +10,11 @@ const router = useRouter();
 const userInfo = computed(() => store.state.userInfo);
 const isAdmin = computed(() => store.getters.isAdmin);
 const avatarUrl = computed(() => {
+  // if (userInfo.value.token) {
+  //   store.commit('SET_TOKEN', userInfo.value.token);
+  // }
   if (!userInfo.value?.avatar) return '';
- // todo 用户头像直接访问浏览器能拿到,前端不显示
+  // todo 用户头像直接访问浏览器能拿到,前端不显示(现已解决)
   // 如果头像路径已经是完整URL，则直接返回
   if (userInfo.value.avatar.startsWith('http')) {
     return userInfo.value.avatar;

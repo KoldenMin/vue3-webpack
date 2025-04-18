@@ -19,12 +19,12 @@
               @keyup.enter="handleLogin"
           />
         </el-form-item>
-<!--        <el-form-item label="验证码" prop="captcha">-->
-<!--          <div class="captcha-container">-->
-<!--            <el-input style="width: 150px" v-model="loginForm.captcha" placeholder="请输入验证码"></el-input>-->
-<!--            <VerifyCode ref="verifyCodeRef" @update:code="captchaCode = $event"/>-->
-<!--          </div>-->
-<!--        </el-form-item>-->
+        <el-form-item label="验证码" prop="captcha">
+          <div class="captcha-container">
+            <el-input style="width: 150px" v-model="loginForm.captcha" placeholder="请输入验证码"></el-input>
+            <VerifyCode ref="verifyCodeRef" @update:code="captchaCode = $event"/>
+          </div>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="loading" @click="handleLogin">登录</el-button>
           <el-button @click="goToRegister">注册</el-button>

@@ -103,13 +103,24 @@
           <div v-if="userInfo.educationList && userInfo.educationList.length > 0">
             <el-timeline>
               <el-timeline-item
-                  v-for="(edu, index) in userInfo.educationList"
-                  :key="index"
+                  v-for="(edu, id) in userInfo.educationList"
+                  :key="id"
                   :timestamp="getEducationPeriod(edu)"
                   placement="top"
               >
                 <el-card>
-                  <h4>{{ edu.school }} - {{ edu.major }}</h4>
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
+                    <div class="education-header">
+                      <h4>{{ edu.school }} - {{ edu.major }}</h4>
+                    </div>
+                    <div>
+                      <el-popconfirm title="确认删除这段经历？" @confirm="handleDeleteEducation(edu.id)">
+                        <template #reference>
+                          <el-button type="danger" size="small">删除经历</el-button>
+                        </template>
+                      </el-popconfirm>
+                    </div>
+                  </div>
                   <p v-if="edu.degree">学位: {{ edu.degree }}</p>
                   <p v-if="edu.description">{{ edu.description }}</p>
                 </el-card>
@@ -117,6 +128,55 @@
             </el-timeline>
           </div>
           <el-empty v-else description="暂无教育背景信息"/>
+        </div>
+
+        <el-divider/>
+
+        <div class="profile-section">
+          <div class="section-header">
+            <h3>个人简历</h3>
+            <el-button
+                v-if="userInfo.resumeUrl"
+                type="success"
+                size="small"
+                @click="viewResume"
+            >
+              查看简历
+            </el-button>
+          </div>
+          <div class="info-grid">
+            <el-upload
+                class="resume-upload"
+                drag
+                :action="null"
+                :http-request="handleResumeUpload"
+                :before-upload="beforeResumeUpload"
+                :on-success="handleResumeSuccess"
+                :on-error="handleResumeError"
+                :show-file-list="true"
+                :limit="1"
+                :file-list="resumeFileList"
+            >
+              <el-icon class="el-icon--upload">
+                <upload-filled/>
+              </el-icon>
+              <div class="el-upload__text">
+                拖动文件或 <em>点击上传</em>
+              </div>
+              <template #tip>
+                <div class="el-upload__tip">
+                  只能上传pdf、doc、docx格式的简历，且不超过10MB
+                </div>
+              </template>
+            </el-upload>
+
+            <div v-if="userInfo.resumeUrl" class="resume-info full-width">
+              <div class="resume-status">
+                <el-tag type="success">已上传简历</el-tag>
+                <span class="resume-filename">{{ getResumeFileName(userInfo.resumeUrl) }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </el-card>
@@ -192,14 +252,12 @@
 </template>
 
 <script setup>
-import {ref, reactive, computed, onMounted} from 'vue';
+import {onMounted, reactive, ref} from 'vue';
 import {useStore} from 'vuex';
 import {ElMessage} from 'element-plus';
-import {getUserInfo, updateUser} from '@/api/user';
-import {addEducation, getEducationList} from '@/api/education';
-import {getToken} from "@/utils/auth.js";
-import router from "@/router/index.js";
-import axios from "axios";
+import {getUserInfo, updateUser, uploadResume} from '@/api/user';
+import {addEducation, delEducationById, getEducationList} from '@/api/education';
+import {UploadFilled} from '@element-plus/icons-vue'
 
 
 const store = useStore();
@@ -210,6 +268,8 @@ const userDialogVisible = ref(false);
 const submitting = ref(false);
 const educationFormRef = ref(null);
 const userInfoFormRef = ref(null);
+const resumeUploading = ref(false);
+const resumeFileList = ref([]);
 
 const educationForm = reactive({
   school: '',
@@ -227,11 +287,27 @@ const userInfoForm = reactive({
   phone: ''
 });
 
+const validateEndDate = (rule, value, callback) => {
+  if (value && educationForm.startDate) {
+    if (new Date(value) < new Date(educationForm.startDate)) {
+      callback(new Error('结束日期不能早于开始日期'));
+    } else {
+      callback();
+    }
+  } else {
+    callback();
+  }
+};
+
 const educationRules = {
   school: [{required: true, message: '请输入学校名称', trigger: 'blur'}],
   major: [{required: true, message: '请输入专业', trigger: 'blur'}],
-  startDate: [{required: true, message: '请选择开始日期', trigger: 'change'}]
+  startDate: [{required: true, message: '请选择开始日期', trigger: 'change'}],
+  endDate: [
+    {validator: validateEndDate, trigger: 'change'}
+  ]
 };
+
 
 const userInfoRules = {
   password: [{min: 2, max: 20, message: '密码长度必须在2-20个字符之间', trigger: 'blur'}],
@@ -239,19 +315,38 @@ const userInfoRules = {
   phone: [{pattern: /^1[3-9]\d{9}$/, message: '手机号码格式不正确', trigger: 'blur'}]
 };
 
+// 删除教育背景信息
+const handleDeleteEducation = async (id) => {
+  try {
+    await delEducationById(id)
+    // 重新获取教育背景列表
+    await fetchUserData();
+  } catch (error) {
+    console.error('删除教育背景失败:', error);
+  }
+}
+
 
 // 获取用户信息及教育背景
 const fetchUserData = async () => {
   loading.value = true;
   try {
     // 获取用户信息
-    console.log('开始获取用户信息，当前 token:', getToken());
-    //能进入
     const userResponse = await getUserInfo();
-    console.log('userResponse', userResponse);
-    console.log('用户ID', userResponse.data.id);
-    console.log(getToken())
     userInfo.value = userResponse.data;
+    // 如果返回token,更新token
+    // if (userInfo.value.token) {
+    //   store.commit('SET_TOKEN', userInfo.value.token);
+    // }
+    // 如果用户已有简历，更新文件列表
+    if (userInfo.value.resumeUrl) {
+      resumeFileList.value = [{
+        name: getResumeFileName(userInfo.value.resumeUrl),
+        url: userInfo.value.resumeUrl
+      }];
+    } else {
+      resumeFileList.value = [];
+    }
 
     // 获取教育背景列表
     const eduResponse = await getEducationList();
@@ -354,10 +449,87 @@ const submitUserInfo = () => {
   });
 };
 
+// 简历上传前的验证
+const beforeResumeUpload = (file) => {
+  const isPDF = file.type === 'application/pdf';
+  const isDOC = file.type === 'application/msword';
+  const isDOCX = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  const isValidType = isPDF || isDOC || isDOCX;
+
+  const isLt10M = file.size / 1024 / 1024 < 10;
+
+  if (!isValidType) {
+    ElMessage.error('简历只能是PDF/DOC/DOCX格式!');
+    return false;
+  }
+
+  if (!isLt10M) {
+    ElMessage.error('简历大小不能超过10MB!');
+    return false;
+  }
+
+  return true;
+};
+
+// 处理简历上传
+const handleResumeUpload = async (options) => {
+  const {file} = options;
+  resumeUploading.value = true;
+
+  try {
+    const formData = new FormData();
+    formData.append('resume', file);
+
+    // 获取当前用户ID
+    const userResponse = await getUserInfo();
+    const userId = userResponse.data.id;
+    formData.append('userId', userId);
+
+    const response = await uploadResume(formData);
+    options.onSuccess(response);
+  } catch (error) {
+    console.error('简历上传失败:', error);
+    options.onError(error);
+  } finally {
+    resumeUploading.value = false;
+  }
+};
+
+// 简历上传成功的回调
+const handleResumeSuccess = (response) => {
+  ElMessage.success('简历上传成功');
+  fetchUserData(); // 重新获取用户数据，包括最新的简历URL
+};
+
+// 简历上传失败的回调
+const handleResumeError = (error) => {
+  console.error('简历上传错误:', error);
+  ElMessage.error('简历上传失败');
+};
+
+// 获取简历文件名
+const getResumeFileName = (url) => {
+  if (!url) return '';
+  return url.split('/').pop();
+};
+
+// 查看简历
+const viewResume = () => {
+  // if (userInfo.value.token) {
+  //   store.commit('SET_TOKEN', userInfo.value.token);
+  // }
+  if (userInfo.value.resumeUrl) {
+    // 构建完整的URL路径，根据您的项目配置可能需要调整
+    const baseUrl = 'http://localhost:8080/api';
+    window.open(baseUrl + userInfo.value.resumeUrl, '_blank');
+  } else {
+    ElMessage.warning('暂无简历可查看');
+  }
+};
+
 onMounted(() => {
   fetchUserData();
 });
-
 
 </script>
 
@@ -421,5 +593,24 @@ h4 {
   margin-top: 0;
   margin-bottom: 10px;
   color: #409eff;
+}
+
+.resume-upload {
+  width: 100%;
+}
+
+.resume-info {
+  margin-top: 15px;
+}
+
+.resume-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.resume-filename {
+  color: #606266;
+  font-size: 14px;
 }
 </style>
