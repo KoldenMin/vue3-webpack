@@ -253,14 +253,12 @@
 
 <script setup>
 import {onMounted, reactive, ref} from 'vue';
-import {useStore} from 'vuex';
 import {ElMessage} from 'element-plus';
 import {getUserInfo, updateUser, uploadResume} from '@/api/user';
 import {addEducation, delEducationById, getEducationList} from '@/api/education';
 import {UploadFilled} from '@element-plus/icons-vue'
 
 
-const store = useStore();
 const loading = ref(true);
 const userInfo = ref({});
 const dialogVisible = ref(false);

@@ -98,6 +98,7 @@ module.exports = {
         },
         compress: true,
         port: 7070,
+        // host: '192.168.1.72',
         hot: true,
         historyApiFallback: true,
         client: {

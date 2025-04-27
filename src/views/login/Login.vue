@@ -19,12 +19,13 @@
               @keyup.enter="handleLogin"
           />
         </el-form-item>
-        <el-form-item label="验证码" prop="captcha">
-          <div class="captcha-container">
-            <el-input style="width: 150px" v-model="loginForm.captcha" placeholder="请输入验证码"></el-input>
-            <VerifyCode ref="verifyCodeRef" @update:code="captchaCode = $event"/>
-          </div>
-        </el-form-item>
+<!--        <el-form-item label="验证码" prop="captcha">-->
+<!--          <div class="captcha-container">-->
+<!--            <el-input @keyup.enter="handleLogin" style="width: 150px" v-model="loginForm.captcha"-->
+<!--                      placeholder="请输入验证码"></el-input>-->
+<!--            <VerifyCode ref="verifyCodeRef" @update:code="captchaCode = $event"/>-->
+<!--          </div>-->
+<!--        </el-form-item>-->
         <el-form-item>
           <el-button type="primary" :loading="loading" @click="handleLogin">登录</el-button>
           <el-button @click="goToRegister">注册</el-button>
@@ -36,16 +37,16 @@
 
 
 <script setup>
-import {ref, reactive, onMounted} from 'vue';
-import {useStore} from 'vuex';
-import {useRouter, useRoute} from 'vue-router';
+import {onMounted, reactive, ref} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
 import {ElMessage} from 'element-plus';
 import VerifyCode from '@/components/VerifyCode.vue';
+import {useUserStore} from "@/store/userStore";
 
 
-const store = useStore();
 const router = useRouter();
 const route = useRoute();
+const userStore = useUserStore();
 
 const loginForm = reactive({
   username: '',
@@ -78,7 +79,23 @@ const handleLogin = () => {
     }
 
     loading.value = true;
-    store.dispatch('login', loginForm)
+
+    // 使用vuex
+    // store.dispatch('login', loginForm)
+    //     .then(() => {
+    //       const redirectPath = route.query.redirect || '/dashboard';
+    //       router.push(redirectPath);
+    //       ElMessage.success('登录成功');
+    //     })
+    //     .catch(() => {
+    //       verifyCodeRef.value.refreshCode();
+    //     })
+    //     .finally(() => {
+    //       loading.value = false;
+    //     });
+
+    // 使用pinia
+    userStore.loginAction(loginForm)
         .then(() => {
           const redirectPath = route.query.redirect || '/dashboard';
           router.push(redirectPath);
@@ -90,6 +107,7 @@ const handleLogin = () => {
         .finally(() => {
           loading.value = false;
         });
+
   });
 };
 
@@ -99,7 +117,7 @@ const goToRegister = () => {
 
 onMounted(() => {
   // 如果已经登录，跳转到首页
-  if (store.state.token) {
+  if (userStore.token) {
     router.push('/dashboard');
   }
 });

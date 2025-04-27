@@ -101,67 +101,53 @@
   </div>
 </template>
 
-<script>
-import {ref, computed, onMounted} from 'vue';
-import {useStore} from 'vuex';
+<script setup>
+import {computed, onMounted, ref} from 'vue';
 import {useRouter} from 'vue-router';
-import {getUserInfo} from '@/api/user';
+import {useUserStore} from "@/store/userStore";
 
-export default {
-  name: 'Dashboard',
-  setup() {
-    const store = useStore();
-    const router = useRouter();
-    const currentTime = ref(new Date().toLocaleString());
+const userStore = useUserStore();
+const router = useRouter();
+const currentTime = ref(new Date().toLocaleString());
 
-    const userInfo = computed(() => store.state.userInfo);
-    const isAdmin = computed(() => store.getters.isAdmin);
+const userInfo = computed(() => userStore.userInfo);
+const isAdmin = computed(() => userStore.isAdmin);
 
-    const fetchUserInfo = async () => {
-      if (!store.state.userInfo) {
-        try {
-          await store.dispatch('getUserInfo');
-        } catch (error) {
-          console.error('获取用户信息失败:', error);
-        }
-      }
-    };
-
-    const formatDate = (dateStr) => {
-      if (!dateStr) return '';
-      const date = new Date(dateStr);
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    };
-
-    const goToProfile = () => {
-      router.push('/profile');
-    };
-
-    const goToUserList = () => {
-      router.push('/users');
-    };
-
-    // 更新当前时间
-    const updateTime = () => {
-      currentTime.value = new Date().toLocaleString();
-    };
-
-    onMounted(() => {
-      fetchUserInfo();
-      // 每秒更新一次时间
-      setInterval(updateTime, 1000);
-    });
-
-    return {
-      currentTime,
-      userInfo,
-      isAdmin,
-      formatDate,
-      goToProfile,
-      goToUserList,
-    };
+const fetchUserInfo = async () => {
+  if (!userStore.userInfo) {
+    try {
+      await userStore.getUserInfoAction()
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+    }
   }
 };
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+const goToProfile = () => {
+  router.push('/profile');
+};
+
+const goToUserList = () => {
+  router.push('/users');
+};
+
+// 更新当前时间
+const updateTime = () => {
+  currentTime.value = new Date().toLocaleString();
+};
+
+onMounted(() => {
+  fetchUserInfo();
+  // 每秒更新一次时间
+  setInterval(updateTime, 1000);
+});
+
 </script>
 
 <style scoped>

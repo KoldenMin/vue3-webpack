@@ -1,14 +1,16 @@
 <script setup>
-import {computed, ref} from 'vue';
-import {useStore} from 'vuex';
+import {computed, onMounted, ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {ElMessage} from 'element-plus';
+import {useUserStore} from "@/store/userStore";
+import {useEmployeeStore} from "@/store/employeeStore";
 
-const store = useStore();
 const router = useRouter();
 
-const userInfo = computed(() => store.state.userInfo);
-const isAdmin = computed(() => store.getters.isAdmin);
+const userStore = useUserStore();
+const employeeStore = useEmployeeStore();
+const userInfo = computed(() => userStore.userInfo)
+const isAdmin = computed(() => userStore.isAdmin);
 const avatarUrl = computed(() => {
   // if (userInfo.value.token) {
   //   store.commit('SET_TOKEN', userInfo.value.token);
@@ -26,9 +28,9 @@ const avatarInput = ref(null);
 
 const handleCommand = (command) => {
   if (command === 'logout') {
-    store.dispatch('logout').then(() => {
+    userStore.logoutAction().then(() => {
       router.push('/login');
-    });
+    })
   } else if (command === 'profile') {
     router.push('/profile');
   } else if (command === 'change-avatar') {
@@ -36,6 +38,7 @@ const handleCommand = (command) => {
     avatarInput.value.click();
   }
 }
+
 
 // 处理头像上传
 const handleAvatarChange = (e) => {
@@ -61,17 +64,16 @@ const handleAvatarChange = (e) => {
   formData.append('avatar', file);
 
   // 调用更新头像的action
-  store.dispatch('updateAvatar', formData)
-      .then(() => {
-        ElMessage.success('头像更新成功');
-      })
-      .catch(error => {
-        ElMessage.error('头像更新失败: ' + (error.message || '未知错误'));
-      });
+  userStore.updateAvatarAction(formData).then(() => {
+    ElMessage.success('头像更新成功');
+  }).catch(error => {
+    ElMessage.error('头像更新失败: ' + (error.message || '未知错误'));
+  })
 
   // 清空文件输入，以便再次选择同一文件
   e.target.value = '';
 }
+
 </script>
 
 <template>
@@ -81,6 +83,9 @@ const handleAvatarChange = (e) => {
       <router-link to="/dashboard" class="menu-item">首页</router-link>
       <router-link to="/profile" class="menu-item">个人信息</router-link>
       <router-link v-if="isAdmin" to="/users" class="menu-item">用户列表</router-link>
+      <router-link to="/approve" class="menu-item">审核列表</router-link>
+      <router-link to="/departments" class="menu-item">部门列表</router-link>
+      <router-link to="/employee" class="menu-item">员工列表</router-link>
     </div>
     <div class="user-info">
       <el-dropdown trigger="click" @command="handleCommand">
