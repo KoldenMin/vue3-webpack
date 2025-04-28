@@ -1,7 +1,7 @@
 import {defineStore} from "pinia";
 import {computed, ref} from "vue";
 import {useUserStore} from "@/store/userStore";
-import {getEmpByUserId} from "@/api/employee";
+import {getEmployeeByUserId} from "@/api/employee";
 import {ElMessage} from "element-plus";
 
 
@@ -27,7 +27,7 @@ export const useEmployeeStore = defineStore('employee', () => {
 
         try {
             const userId = userStore.userInfo.id;
-            const response = await getEmpByUserId(userId);
+            const response = await getEmployeeByUserId(userId);
             if (response.code === 200 && response.data) {
                 employeeInfo.value = response.data;
                 return response.data;

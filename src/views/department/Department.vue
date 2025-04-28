@@ -302,6 +302,12 @@ const dateFormatter = (row, column, cellValue) => {
             width="100"
             align="center"
         />
+        <el-table-column
+            prop="managerName"
+            label="部门经理"
+            width="100"
+            align="center"
+        />
 
         <el-table-column
             prop="workingDate"
@@ -441,10 +447,10 @@ const dateFormatter = (row, column, cellValue) => {
           />
         </el-form-item>
         <el-form-item label="工作日期" prop="workingDate">
-          <el-input v-model="departmentForm.workingDate" placeholder="例如：周一至周五"/>
+          <el-input v-model="departmentForm.workingDate" placeholder="例如：周一到周五"/>
         </el-form-item>
         <el-form-item label="工作时长" prop="workingHours">
-          <el-input v-model="departmentForm.workingHours" placeholder="例如：9:00-18:00"/>
+          <el-input v-model="departmentForm.workingHours" placeholder="例如：9:00--18:00"/>
         </el-form-item>
       </el-form>
       <template #footer>
