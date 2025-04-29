@@ -22,6 +22,14 @@ export function getEmployeeById(id) {
     })
 }
 
+// 获取所有员工列表
+export function getEmployeeList() {
+    return request({
+        url: '/employee/list',
+        method: 'get'
+    })
+}
+
 // 根据用户ID获取员工信息
 export function getEmployeeByUserId(userId) {
     return request({

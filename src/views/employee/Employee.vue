@@ -70,6 +70,13 @@
         />
 
         <el-table-column
+            prop="departmentName"
+            label="部门名称"
+            width="120"
+            align="center"
+        />
+
+        <el-table-column
             prop="role"
             label="角色"
             width="100"
@@ -172,7 +179,10 @@
             <el-tag v-else-if="selectedEmployee.role === 1" type="warning">管理员</el-tag>
             <el-tag v-else type="info">员工</el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="部门ID">{{ selectedEmployee.departmentId || '未分配' }}</el-descriptions-item>
+          <el-descriptions-item label="部门名称">{{
+              selectedEmployee.departmentName || '未分配'
+            }}
+          </el-descriptions-item>
           <el-descriptions-item label="当前住址" :span="2">
             {{ selectedEmployee.currentAddress || '未填写' }}
           </el-descriptions-item>
@@ -240,18 +250,18 @@
             <el-option :value="2" label="经理"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="用户ID" prop="userId">
-          <el-input v-model="employeeForm.userId"></el-input>
-        </el-form-item>
-        <el-form-item label="部门ID" prop="departmentId">
-          <el-input v-model="employeeForm.departmentId"></el-input>
+        <el-form-item label="部门名称" prop="departmentName">
+          <el-select v-model="employeeForm.departmentName">
+            <el-option
+                v-for="dept in departmentList"
+                :key="dept.id"
+                :label="dept.name"
+                :value="dept.name"
+            ></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="当前住址" prop="currentAddress">
           <el-input v-model="employeeForm.currentAddress" type="textarea" rows="3"></el-input>
-        </el-form-item>
-        <el-form-item label="入职时间" prop="entryTime">
-          <el-date-picker v-model="employeeForm.entryTime" type="date"
-                          placeholder="选择入职时间"></el-date-picker>
         </el-form-item>
         <el-form-item label="职能描述" prop="jobDescription">
           <el-input v-model="employeeForm.jobDescription" type="textarea" rows="4"></el-input>
@@ -324,9 +334,10 @@ import {
   addOrUpdateEmployee,
   deleteEmployee,
   uploadAvatar,
-  uploadResume, updateEmployeeRole
+  uploadResume, updateEmployeeRole, getEmployeeByUserId
 } from '@/api/employee';
 import {useEmployeeStore} from "@/store/employeeStore";
+import {getAllDepartments} from "@/api/registerApprove";
 
 // 数据列表和分页
 const loading = ref(false);
@@ -357,9 +368,11 @@ const employeeForm = reactive({
   resumeUrl: '',
   jobDescription: '',
   departmentId: null,
+  departmentName: null,
   role: 0,
   userId: null
 });
+const departmentList = ref([])
 
 // 表单验证规则
 const rules = {
@@ -421,11 +434,20 @@ const handleClear = () => {
   fetchEmployeeList();
 };
 
+//获取部门列表
+const fetchDepartmentList = async () => {
+  const result = await getAllDepartments();
+  if (result.code === 200) {
+    departmentList.value = result.data
+  }
+};
+
 // 查看员工详情
 const viewEmployeeDetail = async (employee) => {
   loading.value = true;
   try {
     const response = await getEmployeeById(employee.id);
+    console.log(response.data)
     selectedEmployee.value = response.data;
     detailDialogVisible.value = true;
   } catch (error) {
@@ -439,12 +461,14 @@ const viewEmployeeDetail = async (employee) => {
 // 编辑员工
 const handleEdit = (employee) => {
   isEdit.value = true;
+  fetchDepartmentList()
   Object.assign(employeeForm, employee);
   formDialogVisible.value = true;
 };
 
 // 新增员工
 const openAddDialog = () => {
+  fetchDepartmentList()
   isEdit.value = false;
   Object.keys(employeeForm).forEach(key => {
     if (key === 'gender') {
@@ -462,7 +486,6 @@ const openAddDialog = () => {
 
 // 提交表单
 const submitEmployeeForm = async () => {
-  // todo 这里还没解决日期的问题
   if (!employeeFormRef.value) return;
   await employeeFormRef.value.validate(async (valid) => {
     if (valid) {
@@ -607,8 +630,9 @@ const formatDate = (dateString) => {
     // 包含时间的格式
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
 
-    return `${year}-${month}-${day}`;
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   } catch (error) {
     console.error('日期格式化错误:', error);
     return dateString;

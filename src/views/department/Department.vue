@@ -9,6 +9,7 @@ import {
   updateDepartment,
   deleteDepartment
 } from '@/api/department';
+import {getEmployeeList} from "@/api/employee";
 
 // 组件状态
 const loading = ref(false);
@@ -20,6 +21,7 @@ const isEdit = ref(false);
 const selectedDepartment = ref(null);
 const departmentEmployees = ref([]);
 const departmentFormRef = ref(null);
+const employeeList = ref([]);
 
 // 分页相关
 const currentPage = ref(1);
@@ -35,7 +37,8 @@ const departmentForm = reactive({
   depaFunction: '',
   workingDate: '',
   workingHours: '',
-  employeeCount: 0
+  employeeCount: 0,
+  managerName: '',
 });
 
 // 表单验证规则
@@ -78,6 +81,15 @@ const fetchDepartmentList = async () => {
     loading.value = false;
   }
 };
+
+// 获取所有员工信息，以便设置管理员
+const fetchEmployeeList = async () => {
+  const response = await getEmployeeList();
+  if (response.code === 200) {
+    employeeList.value = response.data;
+  }
+}
+
 
 // 查询
 const handleSearch = () => {
@@ -145,6 +157,7 @@ const viewDepartmentEmployees = async (department) => {
 // 编辑部门
 const editDepartment = async (department) => {
   isEdit.value = true;
+  await fetchEmployeeList();
   const response = await getDepartmentInfo(department.id);
   if (response.code === 200) {
     const deptData = response.data;
@@ -162,8 +175,9 @@ const editDepartment = async (department) => {
 };
 
 // 显示添加部门对话框
-const showAddDepartmentDialog = () => {
+const showAddDepartmentDialog = async () => {
   isEdit.value = false;
+  await fetchEmployeeList();
   Object.assign(departmentForm, {
     id: null,
     name: '',
@@ -190,7 +204,8 @@ const submitDepartmentForm = async () => {
             name: departmentForm.name,
             depaFunction: departmentForm.depaFunction,
             workingDate: departmentForm.workingDate,
-            workingHours: departmentForm.workingHours
+            workingHours: departmentForm.workingHours,
+            managerName: departmentForm.managerName,
           };
           response = await updateDepartment(departmentForm.id, updateDTO);
         } else {
@@ -445,6 +460,16 @@ const dateFormatter = (row, column, cellValue) => {
               placeholder="请输入部门职能描述"
               :rows="3"
           />
+        </el-form-item>
+        <el-form-item label="部门经理" prop="managerName">
+          <el-select v-model="departmentForm.managerName">
+            <el-option
+                v-for="item in employeeList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.name"
+            ></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="工作日期" prop="workingDate">
           <el-input v-model="departmentForm.workingDate" placeholder="例如：周一到周五"/>
