@@ -83,9 +83,46 @@ const handleAvatarChange = (e) => {
       <router-link to="/dashboard" class="menu-item">首页</router-link>
       <router-link to="/profile" class="menu-item">个人信息</router-link>
       <router-link v-if="isAdmin" to="/users" class="menu-item">用户列表</router-link>
-      <router-link to="/approve" class="menu-item">审核列表</router-link>
-      <router-link to="/departments" class="menu-item">部门列表</router-link>
-      <router-link to="/employee" class="menu-item">员工列表</router-link>
+      <!-- 人员信息管理下拉菜单 -->
+      <el-dropdown class="menu-dropdown">
+        <span class="menu-item dropdown-trigger">
+          人员信息管理
+          <i class="el-icon-arrow-down"></i>
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item>
+              <router-link to="/approve" class="dropdown-link">审核列表</router-link>
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <router-link to="/departments" class="dropdown-link">部门列表</router-link>
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <router-link to="/employee" class="dropdown-link">员工列表</router-link>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+      <!-- 项目信息管理下拉菜单 -->
+      <el-dropdown class="menu-dropdown">
+        <span class="menu-item dropdown-trigger">
+          人员信息管理
+          <i class="el-icon-arrow-down"></i>
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item>
+              <router-link to="/approve" class="dropdown-link">项目列表</router-link>
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <router-link to="/departments" class="dropdown-link">项目参与人员</router-link>
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <router-link to="/employee" class="dropdown-link">项目测试</router-link>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
     <div class="user-info">
       <el-dropdown trigger="click" @command="handleCommand">
