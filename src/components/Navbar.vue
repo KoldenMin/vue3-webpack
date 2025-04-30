@@ -106,13 +106,13 @@ const handleAvatarChange = (e) => {
       <!-- 项目信息管理下拉菜单 -->
       <el-dropdown class="menu-dropdown">
         <span class="menu-item dropdown-trigger">
-          人员信息管理
+          项目信息管理
           <i class="el-icon-arrow-down"></i>
         </span>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item>
-              <router-link to="/approve" class="dropdown-link">项目列表</router-link>
+              <router-link to="/project" class="dropdown-link">项目列表</router-link>
             </el-dropdown-item>
             <el-dropdown-item>
               <router-link to="/departments" class="dropdown-link">项目参与人员</router-link>

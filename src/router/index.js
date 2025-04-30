@@ -58,6 +58,12 @@ const routes = [
                 name: 'employeeList',
                 component: () => import('@/views/employee/Employee.vue'),
                 meta: {title: '员工列表', requiresAuth: true,}
+            },
+            {
+                path: 'project',
+                name: 'projectList',
+                component: () => import('@/views/project/Project.vue'),
+                meta: {title: '项目列表', requiresAuth: true,}
             }
         ]
     },

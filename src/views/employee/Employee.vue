@@ -447,7 +447,6 @@ const viewEmployeeDetail = async (employee) => {
   loading.value = true;
   try {
     const response = await getEmployeeById(employee.id);
-    console.log(response.data)
     selectedEmployee.value = response.data;
     detailDialogVisible.value = true;
   } catch (error) {
