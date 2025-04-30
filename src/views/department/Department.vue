@@ -9,7 +9,7 @@ import {
   updateDepartment,
   deleteDepartment
 } from '@/api/department';
-import {getEmployeeList} from "@/api/employee";
+import {getEmployeeList, updateEmployeeRole} from "@/api/employee";
 
 // 组件状态
 const loading = ref(false);
@@ -82,7 +82,7 @@ const fetchDepartmentList = async () => {
   }
 };
 
-// 获取所有员工信息，以便设置管理员
+// 获取当前部门所有员工信息，以便设置管理员
 const fetchEmployeeList = async () => {
   const response = await getEmployeeList();
   if (response.code === 200) {
@@ -157,7 +157,8 @@ const viewDepartmentEmployees = async (department) => {
 // 编辑部门
 const editDepartment = async (department) => {
   isEdit.value = true;
-  await fetchEmployeeList();
+  // await fetchEmployeeList();
+  const departmentEmployeesResponse = await getDepartmentEmployees(department.id);
   const response = await getDepartmentInfo(department.id);
   if (response.code === 200) {
     const deptData = response.data;
@@ -166,8 +167,12 @@ const editDepartment = async (department) => {
       name: deptData.name,
       depaFunction: deptData.depaFunction,
       workingDate: deptData.workingDate,
-      workingHours: deptData.workingHours
+      workingHours: deptData.workingHours,
+      managerId: deptData.managerId,
+      managerName: deptData.managerName,
     });
+    // 显示经理列表
+    employeeList.value = departmentEmployeesResponse.data;
     formDialogVisible.value = true;
   } else {
     ElMessage.error('获取部门信息失败');
@@ -216,7 +221,7 @@ const submitDepartmentForm = async () => {
         if (response.code === 200) {
           ElMessage.success(isEdit.value ? '修改部门成功' : '添加部门成功');
           formDialogVisible.value = false;
-          fetchDepartmentList(); // 刷新列表
+          await fetchDepartmentList(); // 刷新列表
         } else {
           ElMessage.error(response.msg || (isEdit.value ? '修改部门失败' : '添加部门失败'));
         }
@@ -444,6 +449,7 @@ const dateFormatter = (row, column, cellValue) => {
         :title="isEdit ? '编辑部门' : '添加部门'"
         width="600px"
     >
+
       <el-form
           ref="departmentFormRef"
           :model="departmentForm"
@@ -478,6 +484,7 @@ const dateFormatter = (row, column, cellValue) => {
           <el-input v-model="departmentForm.workingHours" placeholder="例如：9:00--18:00"/>
         </el-form-item>
       </el-form>
+
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="formDialogVisible = false">取消</el-button>
