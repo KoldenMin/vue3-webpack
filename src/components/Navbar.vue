@@ -187,6 +187,21 @@ const handleAvatarChange = (e) => {
   background-color: rgba(64, 158, 255, 0.1);
 }
 
+.dropdown-trigger {
+  cursor: pointer;
+}
+
+.dropdown-link {
+  text-decoration: none;
+  color: #606266;
+  display: block;
+  width: 100%;
+}
+
+.dropdown-link:hover {
+  color: #409EFF;
+}
+
 .router-link-active {
   color: #409EFF;
   font-weight: 500;
@@ -203,6 +218,12 @@ const handleAvatarChange = (e) => {
   padding: 4px;
   border-radius: 50%;
   transition: all 0.3s ease;
+}
+
+.menu-dropdown {
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .avatar-container:hover {
