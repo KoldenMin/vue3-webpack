@@ -6,72 +6,87 @@ import {useUserStore} from "@/store/userStore";
 
 /* 路由配置 */
 const routes = [
-    {
-        path: '/login',
-        name: 'Login',
-        component: () => import('@/views/login/Login.vue'),
-        meta: {title: '登录'}
-    },
-    {
-        path: '/register',
-        name: 'Register',
-        component: () => import('@/views/login/Register.vue'),
-        meta: {title: '注册'}
-    },
-    {
-        path: '/',
-        component: () => import('@/layout/AppLayout.vue'),
-        redirect: '/dashboard',
-        children: [
-            {
-                path: 'dashboard',
-                name: 'Dashboard',
-                component: () => import('@/views/dashboard/index.vue'),
-                meta: {title: '首页', requiresAuth: true}
-            },
-            {
-                path: 'profile',
-                name: 'Profile',
-                component: () => import('@/views/user/Profile.vue'),
-                meta: {title: '个人信息', requiresAuth: true}
-            },
-            {
-                path: 'users',
-                name: 'UserList',
-                component: () => import('@/views/user/UserList.vue'),
-                meta: {title: '用户列表', requiresAuth: true, requiresAdmin: true}
-            },
-            {
-                path: 'approve',
-                name: 'ApproveList',
-                component: () => import('@/views/approve/Approve.vue'),
-                meta: {title: '审核列表', requiresAuth: true,}
-            },
-            {
-                path: 'departments',
-                name: 'departmentList',
-                component: () => import('@/views/department/Department.vue'),
-                meta: {title: '部门列表', requiresAuth: true,}
-            },
-            {
-                path: 'employee',
-                name: 'employeeList',
-                component: () => import('@/views/employee/Employee.vue'),
-                meta: {title: '员工列表', requiresAuth: true,}
-            },
-            {
-                path: 'project',
-                name: 'projectList',
-                component: () => import('@/views/project/Project.vue'),
-                meta: {title: '项目列表', requiresAuth: true,}
-            }
-        ]
-    },
-    {
-        path: '/:pathMatch(.*)*',
-        redirect: '/dashboard'
-    }
-];
+        {
+            path: '/login',
+            name: 'Login',
+            component: () => import('@/views/login/Login.vue'),
+            meta: {title: '登录'}
+        },
+        {
+            path: '/register',
+            name: 'Register',
+            component: () => import('@/views/login/Register.vue'),
+            meta: {title: '注册'}
+        },
+        {
+            path: '/',
+            component: () => import('@/layout/AppLayout.vue'),
+            redirect: '/dashboard',
+            children: [
+                {
+                    path: 'dashboard',
+                    name: 'Dashboard',
+                    component: () => import('@/views/dashboard/index.vue'),
+                    meta: {title: '首页', requiresAuth: true}
+                },
+                {
+                    path: 'profile',
+                    name: 'Profile',
+                    component: () => import('@/views/user/Profile.vue'),
+                    meta: {title: '个人信息', requiresAuth: true}
+                },
+                {
+                    path: 'users',
+                    name: 'UserList',
+                    component: () => import('@/views/user/UserList.vue'),
+                    meta: {title: '用户列表', requiresAuth: true, requiresAdmin: true}
+                },
+                {
+                    path: 'approve',
+                    name: 'ApproveList',
+                    component: () => import('@/views/approve/Approve.vue'),
+                    meta: {title: '审核列表', requiresAuth: true,}
+                },
+                {
+                    path: 'departments',
+                    name: 'departmentList',
+                    component: () => import('@/views/department/Department.vue'),
+                    meta: {title: '部门列表', requiresAuth: true,}
+                },
+                {
+                    path: 'employee',
+                    name: 'employeeList',
+                    component: () => import('@/views/employee/Employee.vue'),
+                    meta: {title: '员工列表', requiresAuth: true,}
+                },
+                {
+                    path: 'project',
+                    name: 'projectList',
+                    component: () => import('@/views/project/Project.vue'),
+                    meta: {title: '项目列表', requiresAuth: true,}
+                },
+                {
+                    path: 'project/participant',
+                    name: 'participantList',
+                    component: () => import('@/views/project/ProjectParticipant.vue'),
+                    meta: {title: '项目参与列表', requiresAuth: true,}
+                },
+                {
+                    path: 'project/test',
+                    name: 'testList',
+                    component: () => import('@/views/project/ProjectTest.vue'),
+                    meta: {title: '项目测试列表', requiresAuth: true,}
+                }
+
+            ]
+        },
+        {
+            path: '/:pathMatch(.*)*',
+            redirect:
+                '/dashboard'
+        }
+    ]
+;
 
 const router = createRouter({
     history: createWebHistory(''),

@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref} from 'vue';
+import {computed, ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {ElMessage} from 'element-plus';
 import {useUserStore} from "@/store/userStore";
@@ -115,10 +115,10 @@ const handleAvatarChange = (e) => {
               <router-link to="/project" class="dropdown-link">项目列表</router-link>
             </el-dropdown-item>
             <el-dropdown-item>
-              <router-link to="/departments" class="dropdown-link">项目参与人员</router-link>
+              <router-link :to="{name:'participantList'}" class="dropdown-link">项目参与人员</router-link>
             </el-dropdown-item>
             <el-dropdown-item>
-              <router-link to="/employee" class="dropdown-link">项目测试</router-link>
+              <router-link to="/project/test" class="dropdown-link">项目测试</router-link>
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
